@@ -1,0 +1,175 @@
+{
+  "$schema": "https://templates.zrs.dev/v1/zrs-app.schema.json",
+  "format_version": 1,
+  "kind": "container-app",
+  "id": "enshrouded",
+  "version": 1,
+  "name": "Enshrouded",
+  "description": "Dedicated server for the survival game Enshrouded.",
+  "about": "Runs the Windows dedicated server on Linux x86-64 through Proton. Downloads the game on first startup. Settings and group passwords are reapplied on startup.",
+  "upstream": "https://github.com/mbround18/enshrouded-docker",
+  "categories": [
+    "gaming"
+  ],
+  "variables": [
+    {
+      "key": "data_dir",
+      "label": "Data folder",
+      "description": "Game files, saves, logs, and config, with ownership reset to the steam user on startup.",
+      "type": "path",
+      "required": true,
+      "default": "{{zrs_app_folder}}"
+    },
+    {
+      "key": "server_name",
+      "label": "Server name",
+      "type": "text",
+      "required": true,
+      "default": "My Enshrouded Server"
+    },
+    {
+      "key": "game_port",
+      "label": "Game port",
+      "description": "Port for player connections.",
+      "type": "port",
+      "required": true,
+      "default": 15636
+    },
+    {
+      "key": "query_port",
+      "label": "Query port",
+      "description": "Port for Steam server queries.",
+      "type": "port",
+      "required": true,
+      "default": 15637
+    },
+    {
+      "key": "admin_password",
+      "label": "Admin password",
+      "description": "Password for the Admin group, whose players can kick, ban, and access inventories.",
+      "type": "password",
+      "required": true
+    },
+    {
+      "key": "guest_password",
+      "label": "Guest password",
+      "description": "Password for players joining the Guest group.",
+      "type": "password",
+      "required": true
+    },
+    {
+      "key": "slot_count",
+      "label": "Player slots",
+      "type": "number",
+      "integer": true,
+      "min": 1,
+      "required": true,
+      "default": 16
+    },
+    {
+      "key": "timezone",
+      "label": "Timezone",
+      "type": "text",
+      "required": true,
+      "default": "Etc/UTC",
+      "level": "advanced"
+    },
+    {
+      "key": "update_on_start",
+      "label": "Update on start",
+      "description": "Checks for game updates on startup.",
+      "type": "toggle",
+      "default": false,
+      "level": "advanced"
+    },
+    {
+      "key": "auto_update",
+      "label": "Automatic updates",
+      "description": "Checks for updates on a schedule and restarts the server to install them.",
+      "type": "toggle",
+      "default": false,
+      "level": "advanced"
+    },
+    {
+      "key": "auto_update_schedule",
+      "label": "Update schedule",
+      "description": "Cron schedule for update checks when automatic updates are enabled.",
+      "type": "text",
+      "required": true,
+      "default": "0 3 * * *",
+      "level": "advanced"
+    },
+    {
+      "key": "webhook_url",
+      "label": "Webhook URL",
+      "description": "Server status webhook URL, including Discord webhooks, or blank to disable.",
+      "type": "text",
+      "level": "advanced"
+    },
+    {
+      "key": "enable_voice_chat",
+      "label": "In-game voice chat",
+      "type": "toggle",
+      "default": false,
+      "level": "advanced"
+    },
+    {
+      "key": "enable_text_chat",
+      "label": "In-game text chat",
+      "type": "toggle",
+      "default": false,
+      "level": "advanced"
+    }
+  ],
+  "containers": [
+    {
+      "image": "mbround18/enshrouded-docker:proton-latest",
+      "environment": {
+        "TZ": "{{timezone}}",
+        "NAME": "{{server_name}}",
+        "GAME_PORT": "{{game_port}}",
+        "QUERY_PORT": "{{query_port}}",
+        "SLOT_COUNT": "{{slot_count}}",
+        "SET_GROUP_ADMIN_PASSWORD": "{{admin_password}}",
+        "SET_GROUP_GUEST_PASSWORD": "{{guest_password}}",
+        "UPDATE_ON_START": "{{update_on_start}}",
+        "AUTO_UPDATE": "{{auto_update}}",
+        "AUTO_UPDATE_SCHEDULE": "{{auto_update_schedule}}",
+        "WEBHOOK_URL": "{{webhook_url}}",
+        "ENABLE_VOICE_CHAT": "{{enable_voice_chat}}",
+        "ENABLE_TEXT_CHAT": "{{enable_text_chat}}"
+      },
+      "ports": [
+        {
+          "container": "{{game_port}}",
+          "host": "{{game_port}}",
+          "protocol": "tcp"
+        },
+        {
+          "container": "{{game_port}}",
+          "host": "{{game_port}}",
+          "protocol": "udp"
+        },
+        {
+          "container": "{{query_port}}",
+          "host": "{{query_port}}",
+          "protocol": "tcp"
+        },
+        {
+          "container": "{{query_port}}",
+          "host": "{{query_port}}",
+          "protocol": "udp"
+        }
+      ],
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "{{data_dir}}",
+          "target": "/home/steam/enshrouded"
+        }
+      ],
+      "restart_policy": "unless-stopped",
+      "stop_timeout": 120
+    }
+  ]
+}
