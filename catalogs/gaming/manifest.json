@@ -13,6 +13,12 @@
       "file": "templates/enshrouded.json"
     },
     {
+      "file": "templates/minecraft-bedrock.json"
+    },
+    {
+      "file": "templates/minecraft.json"
+    },
+    {
       "file": "templates/mumble.json"
     }
   ],
